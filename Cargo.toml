@@ -1,0 +1,15 @@
+[package]
+name = "ringstack"
+version = "0.1.0"
+edition = "2021"
+authors = ["msr1k <msr0210@gmail.com>"]
+license = "MIT"
+description = "A very simple circular buffered stack implementation."
+repository = "https://github.com/msr1k/ringstack"
+documentation = "https://docs.rs/ringstack"
+keyword = ["ringbuffer", "stack"]
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
