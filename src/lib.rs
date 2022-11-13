@@ -43,6 +43,7 @@
 //! 
 use std::iter::Iterator;
 
+#[derive(Debug)]
 pub struct RingStack<T, const N: usize> {
     buffer: Vec<Option<T>>,
     index: usize,

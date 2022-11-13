@@ -5,6 +5,10 @@
 
 ## Changelog
 
+### 0.1.1
+
+Make RingStack [Debug] derived
+
 ### 0.1.0
 
 Initial Version
