@@ -47,20 +47,23 @@ use std::iter::Iterator;
 pub struct RingStack<T, const N: usize> {
     buffer: Vec<Option<T>>,
     index: usize,
+    len: usize,
 }
 
 impl<T, const N: usize> RingStack<T, N> {
 
     pub fn new() -> Self {
         let index = 0;
+        let len = 0;
         let mut buffer = Vec::with_capacity(N);
         (0..N).for_each(|_| buffer.push(None));
 
-        RingStack { buffer, index }
+        RingStack { buffer, index, len }
     }
 
     pub fn push(&mut self, val: T) -> () {
         self.index = match self.index >= N - 1 { true => 0, false => self.index + 1 };
+        self.len = if self.len == N { self.len } else { self.len + 1 };
         std::mem::swap(&mut self.buffer[self.index], &mut Some(val));
     }
 
@@ -68,11 +71,16 @@ impl<T, const N: usize> RingStack<T, N> {
         let mut v = None;
         std::mem::swap(&mut self.buffer[self.index], &mut v);
         self.index = match self.index == 0 { true => N - 1, false => self.index - 1 };
+        self.len = if self.len == 0 { self.len } else { self.len - 1 };
         v
     }
 
     pub fn peek(&self) -> Option<&T> {
         self.buffer[self.index].as_ref()
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
     }
 
     pub fn iter(&self) -> impl Iterator<Item=&Option<T>> {
