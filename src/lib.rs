@@ -85,6 +85,15 @@ impl<T, const N: usize> RingStack<T, N> {
         self.len
     }
 
+    pub fn get(&self, index: usize) -> Option<&T> {
+        if index >= N {
+            None
+        } else {
+            let index = (self.index + N - index) % N;
+            self.buffer[index].as_ref()
+        }
+    }
+
     pub fn iter(&self) -> impl Iterator<Item=&T> {
         let a = self.buffer[0..=self.index].iter().rev();
         let b = self.buffer[(self.index + 1)..N].iter().rev();
@@ -93,15 +102,14 @@ impl<T, const N: usize> RingStack<T, N> {
 }
 
 impl<T, const N: usize> Index<usize> for RingStack<T,  N> {
-    type Output = Option<T>;
+    type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
-        if index >= N {
-            &None
-        } else {
-            let index = (self.index + N - index) % N;
-            &self.buffer[index]
+        if index >= self.len {
+            panic!("Specified index is out of bounds.")
         }
+        let index = (self.index + N - index) % N;
+        &self.buffer[index].as_ref().unwrap()
     }
 }
 
@@ -110,16 +118,18 @@ mod t {
     use super::*;
 
     #[test]
-    fn test_internals() {
+    fn test_internal_representaions_and_get_index() {
         let mut s = RingStack::<i32, 3>::new();
         assert_eq!(s.peek(), None);
         assert_eq!(s.index, 0);
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
-        assert_eq!(s[0], None);
-        assert_eq!(s[1], None);
-        assert_eq!(s[2], None);
+
+        assert_eq!(s.get(0), None);
+        assert_eq!(s.get(1), None);
+        assert_eq!(s.get(2), None);
+
 
         s.push(1);
         assert_eq!(s.peek(), Some(&1));
@@ -127,9 +137,12 @@ mod t {
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], None);
-        assert_eq!(s[0], Some(1));
-        assert_eq!(s[1], None);
-        assert_eq!(s[2], None);
+
+        assert_eq!(s.get(0), Some(&1));
+        assert_eq!(s.get(1), None);
+        assert_eq!(s.get(2), None);
+
+        assert_eq!(s[0], 1i32);
 
         s.push(2);
         assert_eq!(s.peek(), Some(&2));
@@ -137,9 +150,13 @@ mod t {
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], Some(2));
-        assert_eq!(s[0], Some(2));
-        assert_eq!(s[1], Some(1));
-        assert_eq!(s[2], None);
+
+        assert_eq!(s.get(0), Some(&2));
+        assert_eq!(s.get(1), Some(&1));
+        assert_eq!(s.get(2), None);
+
+        assert_eq!(s[0], 2);
+        assert_eq!(s[1], 1);
 
         s.push(3);
         assert_eq!(s.peek(), Some(&3));
@@ -147,10 +164,15 @@ mod t {
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], Some(2));
-        assert_eq!(s[0], Some(3));
-        assert_eq!(s[1], Some(2));
-        assert_eq!(s[2], Some(1));
-        assert_eq!(s[3], None);
+
+        assert_eq!(s.get(0), Some(&3));
+        assert_eq!(s.get(1), Some(&2));
+        assert_eq!(s.get(2), Some(&1));
+        assert_eq!(s.get(3), None);
+
+        assert_eq!(s[0], 3);
+        assert_eq!(s[1], 2);
+        assert_eq!(s[2], 1);
 
         s.push(4);
         assert_eq!(s.peek(), Some(&4));
@@ -158,38 +180,55 @@ mod t {
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], Some(4));
         assert_eq!(s.buffer[2], Some(2));
-        assert_eq!(s[0], Some(4));
-        assert_eq!(s[1], Some(3));
-        assert_eq!(s[2], Some(2));
-        assert_eq!(s[3], None);
+
+        assert_eq!(s.get(0), Some(&4));
+        assert_eq!(s.get(1), Some(&3));
+        assert_eq!(s.get(2), Some(&2));
+        assert_eq!(s.get(3), None);
+
+        assert_eq!(s[0], 4);
+        assert_eq!(s[1], 3);
+        assert_eq!(s[2], 2);
 
         assert_eq!(s.peek(), Some(&4));
         assert_eq!(s.pop(), Some(4));
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], Some(2));
-        assert_eq!(s[0], Some(3));
-        assert_eq!(s[1], Some(2));
-        assert_eq!(s[2], None);
+
+        assert_eq!(s.get(0), Some(&3));
+        assert_eq!(s.get(1), Some(&2));
+        assert_eq!(s.get(2), None);
+
+        assert_eq!(s[0], 3);
+        assert_eq!(s[1], 2);
 
         assert_eq!(s.pop(), Some(3));
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], Some(2));
-        assert_eq!(s[0], Some(2));
-        assert_eq!(s[1], None);
+
+        assert_eq!(s.get(0), Some(&2));
+        assert_eq!(s.get(1), None);
+
+        assert_eq!(s[0], 2);
+
 
         assert_eq!(s.pop(), Some(2));
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
-        assert_eq!(s[0], None);
+
+        assert_eq!(s.get(0), None);
+
 
         assert_eq!(s.pop(), None);
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
-        assert_eq!(s[0], None);
+
+        assert_eq!(s.get(0), None);
+
     }
 
     #[test]
@@ -242,5 +281,15 @@ mod t {
         assert_eq!(v.len(), 2);
         assert_eq!(v[0], &8);
         assert_eq!(v[1], &7);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_index_access() {
+        let mut s = RingStack::<i32, 3>::new();
+
+        s.push(100);
+        assert_eq!(s[0], 100);
+        let _out_of_bounds_access = s[1];
     }
 }
