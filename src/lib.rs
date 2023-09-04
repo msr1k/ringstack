@@ -5,13 +5,13 @@
 //! Since [RingStack] is constructed upon a circular buffer,
 //! the oldest item automatically dropped as you [push][RingStack::push()]
 //! when the number of items has already reached its limit.
-//! (Thus [`len`] method saturate with that number of limit.)
+//! (Thus [len][RingStack::len()] method saturate with that number of limit.)
 //!
 //! And it supports [RingStack::iter()] method which returns `Iterator<&T>`.
 //! It provides items one by one with historical order, latest to oldest.
 //!
 //! Though [RingStack] currently uses [Vec] as its internals,
-//! once it allocates at the timing of [new][RingStack::iter()]
+//! once it allocates at the timing of [new][RingStack::new()]
 //! then additional allocation never happends.
 //!
 //! ## Examples
@@ -26,6 +26,9 @@
 //! s.push(2);
 //! assert_eq!(s.peek(), Some(&2));
 //! assert_eq!(s.pop(), Some(2));
+//! assert_eq!(s[0], 1);
+//! assert_eq!(s.get(0), Some(&1));
+//! assert_eq!(s.get(1), None);
 //!
 //! s.push(3);
 //! s.push(4);
@@ -291,5 +294,12 @@ mod t {
         s.push(100);
         assert_eq!(s[0], 100);
         let _out_of_bounds_access = s[1];
+    }
+
+    #[test]
+    #[should_panic(expected = "Specified index is out of bounds")]
+    fn test_index_access_check() {
+        let s = RingStack::<i32, 3>::new();
+        let _out_of_bounds_access = s[3];
     }
 }
