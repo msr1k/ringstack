@@ -6,7 +6,7 @@
 //! the oldest item automatically dropped as you [push][RingStack::push()]
 //! when the number of items has already reached its limit.
 //!
-//! And it supports [RingStack::iter()] method which returns `Iterator<&Option<T>>`.
+//! And it supports [RingStack::iter()] method which returns `Iterator<&T>`.
 //! It provides items one by one with historical order, latest to oldest.
 //!
 //! Though [RingStack] currently uses [Vec] as its internals,
@@ -28,12 +28,12 @@
 //!
 //! s.push(3);
 //! s.push(4);
-//! let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
-//! assert_eq!(v, vec![Some(4), Some(3), Some(1)]);
+//! let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+//! assert_eq!(v, vec![4, 3, 1]);
 //!
 //! s.push(5);
-//! let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
-//! assert_eq!(v, vec![Some(5), Some(4), Some(3)]);
+//! let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+//! assert_eq!(v, vec![5, 4, 3]);
 //!
 //! assert_eq!(s.pop(), Some(5));
 //! assert_eq!(s.pop(), Some(4));
@@ -83,10 +83,10 @@ impl<T, const N: usize> RingStack<T, N> {
         self.len
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&Option<T>> {
+    pub fn iter(&self) -> impl Iterator<Item=&T> {
         let a = self.buffer[0..=self.index].iter().rev();
         let b = self.buffer[(self.index + 1)..N].iter().rev();
-        a.chain(b)
+        a.chain(b).map_while(|e| e.as_ref())
     }
 }
 
@@ -175,31 +175,33 @@ mod t {
 
         s.push(6);
         s.push(7);
-        let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
-        assert_eq!(v.len(), 3);
-        assert_eq!(v[0], Some(7));
-        assert_eq!(v[1], Some(6));
-        assert_eq!(v[2], None);
+        assert_eq!(s.len(), 2);
+        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        assert_eq!(v.len(), 2);
+        assert_eq!(v[0], 7);
+        assert_eq!(v[1], 6);
 
         s.push(8);
-        let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
+        assert_eq!(s.len(), 3);
+        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
         assert_eq!(v.len(), 3);
-        assert_eq!(v[0], Some(8));
-        assert_eq!(v[1], Some(7));
-        assert_eq!(v[2], Some(6));
+        assert_eq!(v[0], 8);
+        assert_eq!(v[1], 7);
+        assert_eq!(v[2], 6);
 
         s.push(9);
-        let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
+        assert_eq!(s.len(), 3);
+        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
         assert_eq!(v.len(), 3);
-        assert_eq!(v[0], Some(9));
-        assert_eq!(v[1], Some(8));
-        assert_eq!(v[2], Some(7));
+        assert_eq!(v[0], 9);
+        assert_eq!(v[1], 8);
+        assert_eq!(v[2], 7);
 
         s.pop();
-        let v: Vec<Option<i32>> = s.iter().map(|e| e.clone()).collect();
-        assert_eq!(v.len(), 3);
-        assert_eq!(v[0], Some(8));
-        assert_eq!(v[1], Some(7));
-        assert_eq!(v[2], None);
+        assert_eq!(s.len(), 2);
+        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        assert_eq!(v.len(), 2);
+        assert_eq!(v[0], 8);
+        assert_eq!(v[1], 7);
     }
 }
