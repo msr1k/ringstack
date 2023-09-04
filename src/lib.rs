@@ -5,6 +5,7 @@
 //! Since [RingStack] is constructed upon a circular buffer,
 //! the oldest item automatically dropped as you [push][RingStack::push()]
 //! when the number of items has already reached its limit.
+//! (Thus [`len`] method saturate with that number of limit.)
 //!
 //! And it supports [RingStack::iter()] method which returns `Iterator<&T>`.
 //! It provides items one by one with historical order, latest to oldest.
@@ -176,32 +177,32 @@ mod t {
         s.push(6);
         s.push(7);
         assert_eq!(s.len(), 2);
-        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        let v: Vec<&i32> = s.iter().collect();
         assert_eq!(v.len(), 2);
-        assert_eq!(v[0], 7);
-        assert_eq!(v[1], 6);
+        assert_eq!(v[0], &7);
+        assert_eq!(v[1], &6);
 
         s.push(8);
         assert_eq!(s.len(), 3);
-        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        let v: Vec<&i32> = s.iter().collect();
         assert_eq!(v.len(), 3);
-        assert_eq!(v[0], 8);
-        assert_eq!(v[1], 7);
-        assert_eq!(v[2], 6);
+        assert_eq!(v[0], &8);
+        assert_eq!(v[1], &7);
+        assert_eq!(v[2], &6);
 
         s.push(9);
         assert_eq!(s.len(), 3);
-        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        let v: Vec<&i32> = s.iter().collect();
         assert_eq!(v.len(), 3);
-        assert_eq!(v[0], 9);
-        assert_eq!(v[1], 8);
-        assert_eq!(v[2], 7);
+        assert_eq!(v[0], &9);
+        assert_eq!(v[1], &8);
+        assert_eq!(v[2], &7);
 
         s.pop();
         assert_eq!(s.len(), 2);
-        let v: Vec<i32> = s.iter().map(|e| e.clone()).collect();
+        let v: Vec<&i32> = s.iter().collect();
         assert_eq!(v.len(), 2);
-        assert_eq!(v[0], 8);
-        assert_eq!(v[1], 7);
+        assert_eq!(v[0], &8);
+        assert_eq!(v[1], &7);
     }
 }
