@@ -43,6 +43,7 @@
 //! ```
 //! 
 use std::iter::Iterator;
+use std::ops::Index;
 
 #[derive(Debug)]
 pub struct RingStack<T, const N: usize> {
@@ -91,6 +92,19 @@ impl<T, const N: usize> RingStack<T, N> {
     }
 }
 
+impl<T, const N: usize> Index<usize> for RingStack<T,  N> {
+    type Output = Option<T>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        if index >= N {
+            &None
+        } else {
+            let index = (self.index + N - index) % N;
+            &self.buffer[index]
+        }
+    }
+}
+
 #[cfg(test)]
 mod t {
     use super::*;
@@ -103,6 +117,9 @@ mod t {
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
+        assert_eq!(s[0], None);
+        assert_eq!(s[1], None);
+        assert_eq!(s[2], None);
 
         s.push(1);
         assert_eq!(s.peek(), Some(&1));
@@ -110,6 +127,9 @@ mod t {
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], None);
+        assert_eq!(s[0], Some(1));
+        assert_eq!(s[1], None);
+        assert_eq!(s[2], None);
 
         s.push(2);
         assert_eq!(s.peek(), Some(&2));
@@ -117,6 +137,9 @@ mod t {
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], Some(2));
+        assert_eq!(s[0], Some(2));
+        assert_eq!(s[1], Some(1));
+        assert_eq!(s[2], None);
 
         s.push(3);
         assert_eq!(s.peek(), Some(&3));
@@ -124,6 +147,10 @@ mod t {
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], Some(1));
         assert_eq!(s.buffer[2], Some(2));
+        assert_eq!(s[0], Some(3));
+        assert_eq!(s[1], Some(2));
+        assert_eq!(s[2], Some(1));
+        assert_eq!(s[3], None);
 
         s.push(4);
         assert_eq!(s.peek(), Some(&4));
@@ -131,27 +158,38 @@ mod t {
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], Some(4));
         assert_eq!(s.buffer[2], Some(2));
+        assert_eq!(s[0], Some(4));
+        assert_eq!(s[1], Some(3));
+        assert_eq!(s[2], Some(2));
+        assert_eq!(s[3], None);
 
         assert_eq!(s.peek(), Some(&4));
         assert_eq!(s.pop(), Some(4));
         assert_eq!(s.buffer[0], Some(3));
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], Some(2));
+        assert_eq!(s[0], Some(3));
+        assert_eq!(s[1], Some(2));
+        assert_eq!(s[2], None);
 
         assert_eq!(s.pop(), Some(3));
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], Some(2));
+        assert_eq!(s[0], Some(2));
+        assert_eq!(s[1], None);
 
         assert_eq!(s.pop(), Some(2));
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
+        assert_eq!(s[0], None);
 
         assert_eq!(s.pop(), None);
         assert_eq!(s.buffer[0], None);
         assert_eq!(s.buffer[1], None);
         assert_eq!(s.buffer[2], None);
+        assert_eq!(s[0], None);
     }
 
     #[test]
