@@ -1,6 +1,6 @@
 [package]
 name = "ringstack"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["msr1k <msr0210@gmail.com>"]
 license = "MIT"

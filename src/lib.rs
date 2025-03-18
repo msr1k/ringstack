@@ -9,6 +9,7 @@
 //!
 //! And it supports [RingStack::iter()] method which returns `Iterator<&T>`.
 //! It provides items one by one with historical order, latest to oldest.
+//! ([RingStack::iter_mut()] method is also available)
 //!
 //! Though [RingStack] currently uses [Vec] as its internals,
 //! once it allocates at the timing of [new][RingStack::new()]
