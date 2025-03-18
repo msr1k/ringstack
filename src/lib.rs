@@ -47,7 +47,7 @@
 //! ```
 //! 
 use std::iter::Iterator;
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone)]
 pub struct RingStack<T, const N: usize> {
@@ -122,6 +122,17 @@ impl<T, const N: usize> Index<usize> for RingStack<T,  N> {
         }
         let index = (self.index + N - index) % N;
         &self.buffer[index].as_ref().unwrap()
+    }
+}
+
+impl<T, const N: usize> IndexMut<usize> for RingStack<T, N> {
+
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if index >= self.len {
+            panic!("Specified index is out of bounds.")
+        }
+        let index = (self.index + N - index) % N;
+        self.buffer[index].as_mut().unwrap()
     }
 }
 
@@ -338,6 +349,20 @@ mod t {
 
         s.push(100);
         assert_eq!(s[0], 100);
+        let _out_of_bounds_access = s[1];
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_index_mut_access() {
+        let mut s = RingStack::<i32, 3>::new();
+
+        s.push(100);
+        assert_eq!(s[0], 100);
+
+        s[0] = 200;
+        assert_eq!(s[0], 200);
+
         let _out_of_bounds_access = s[1];
     }
 
