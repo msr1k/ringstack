@@ -11,6 +11,7 @@ when the number of items has already reached its limit.
 
 And it supports [RingStack::iter()] method which returns `Iterator<&T>`.
 It provides items one by one with historical order, latest to oldest.
+([RingStack::iter_mut()] method is also available)
 
 Though [RingStack] currently uses [Vec] as its internals,
 once it allocates at the timing of [new][RingStack::new()]
@@ -51,6 +52,11 @@ assert_eq!(s.pop(), None);
 
 
 ## Changelog
+
+### 0.3.0 (2025/03/18)
+
+- Added [`iter_mut()`] and mut version of index accessing.
+- Added [`clone()`]
 
 ### 0.2.0
 

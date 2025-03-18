@@ -5,6 +5,11 @@
 
 ## Changelog
 
+### 0.3.0 (2025/03/18)
+
+- Added [`iter_mut()`] and mut version of index accessing.
+- Added [`clone()`]
+
 ### 0.2.0
 
 - Added [`len()`], [`get()`] methods.
