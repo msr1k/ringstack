@@ -49,7 +49,7 @@
 use std::iter::Iterator;
 use std::ops::Index;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RingStack<T, const N: usize> {
     buffer: Vec<Option<T>>,
     index: usize,
@@ -99,9 +99,17 @@ impl<T, const N: usize> RingStack<T, N> {
     }
 
     pub fn iter(&self) -> impl Iterator<Item=&T> {
-        let a = self.buffer[0..=self.index].iter().rev();
-        let b = self.buffer[(self.index + 1)..N].iter().rev();
+        let (a, b) = self.buffer.split_at(self.index + 1);
+        let a = a.iter().rev();
+        let b = b.iter().rev();
         a.chain(b).map_while(|e| e.as_ref())
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut T> {
+        let (a, b) = self.buffer.split_at_mut(self.index + 1);
+        let a = a.iter_mut().rev();
+        let b = b.iter_mut().rev();
+        a.chain(b).map_while(|e| e.as_mut())
     }
 }
 
@@ -285,6 +293,42 @@ mod t {
         assert_eq!(v.len(), 2);
         assert_eq!(v[0], &8);
         assert_eq!(v[1], &7);
+    }
+
+    #[test]
+    fn test_iter_mut() {
+
+        #[derive(Debug, PartialEq)]
+        struct I32(i32); 
+
+        let mut s = RingStack::<I32, 3>::new();
+
+        s.push(I32(6));
+        s.push(I32(7));
+        assert_eq!(s.len(), 2);
+        let mut v: Vec<&mut I32> = s.iter_mut().collect();
+        assert_eq!(v.len(), 2);
+        assert_eq!(v[0], &I32(7));
+        assert_eq!(v[1], &I32(6));
+
+        v[0].0 = 1;
+        v[1].0 = 2;
+
+        assert_eq!(v[0], &I32(1));
+        assert_eq!(v[1], &I32(2));
+    }
+
+    #[test]
+    fn test_clone() {
+        let mut s = RingStack::<i32, 3>::new();
+
+        s.push(6);
+        s.push(7);
+
+        let t = s.clone();
+
+        assert_eq!(s[0], t[0]);
+        assert_eq!(s[1], t[1]);
     }
 
     #[test]
